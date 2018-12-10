@@ -1,7 +1,12 @@
 from Parser import parser
 from FilterAndTokenize import filterDoc
 from ForwardIndexer import forwardIndexer
+from fire import pushInFirebase
+from InvertIndexer import invertedIndex
 import os
+
+
+    
 
 def goThroughAllFiles():
 
@@ -9,7 +14,9 @@ def goThroughAllFiles():
 
     numOfFiles = 0 #Total 109832 files have to be parsed!! Keep Calm xD
 
-    done = False #This is just for testing. Only one page will be indexed. To index all, remove this variable from this file.
+    n = 1
+
+    done = 0 #This is just for testing. 1040 pages will be indexed. To index all, remove this variable from code.
     
     #Recursively goes through every folder
     for root, dirs, files in os.walk(path):
@@ -17,7 +24,7 @@ def goThroughAllFiles():
         for name in files:
             
             if name.endswith((".html", "htm")):
-                
+
                 numOfFiles+= 1
                 
                 pageTitle, headings, text = parser(root + "\\" + name) #See Parser file
@@ -27,14 +34,20 @@ def goThroughAllFiles():
                 if(pageTitle == None): pageTitle = name[:-5]
                 else: pageTitle = pageTitle.text
                 
-                forwardIndexer(numOfFiles, pageTitle, headings, textList) #See ForwardIndexer file
+                #forwardIndexer(numOfFiles, pageTitle, headings, textList) #See ForwardIndexer file
+
+                invertedIndex(numOfFiles, textList, dictionaryForII)
                 
                 print(numOfFiles)
                 
-                done = True 
-                
-                break #done variable and break are just to make sure that only one doc is indexed. Later these will be removed.
+                done+=1 
         
-        if(done): break
+        if(done >= 1000): break
+
+dictionaryForII = dict()
+
 
 goThroughAllFiles()
+
+
+pushInFirebase(dictionaryForII)
