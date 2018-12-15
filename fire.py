@@ -32,6 +32,3 @@ def pushInFirebaseUrl(dictDoc):
     root=db.reference()
     ref=root.child('url')
     ref.push().set(dictDoc)
-
-    ref=root.child('InvertedIndex')
-    ref.set(dictDoc)
