@@ -65,7 +65,22 @@ def applyPS(tokens):
     for term in tokens:
         finalList.append(PS.stem(term))
 
-    return finalList
+    return getPos(finalList)
+
+def getPos(aList):
+
+    tempList = []
+    
+    for word in aList:
+        if presence(word, tempList): continue
+        tempList.append([word , [i for i, w in enumerate(aList) if w == word]])
+                        
+    return tempList
+
+def presence(aWord, tempList):
+        for subList in tempList:
+            if aWord == subList[0] : return True
+        return False
 
 
 

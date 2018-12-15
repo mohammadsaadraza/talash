@@ -1,13 +1,8 @@
-def invertedIndex(docId, listContainingTextOfDoc, dictionaryForII):
-
-    tempDict = dict()
+def invertedIndex(docId, hitList, dictionaryForII):
     
-    for token in listContainingTextOfDoc:
-    
-        if token in dictionaryForII:
-            if dictionaryForII[token][-1][0] == docId: 
-                dictionaryForII[token][-1][1]+= 1
-            else:
-                dictionaryForII[token].append([docId, 1])
+    for token in hitList:
+        
+        if token[0] in dictionaryForII:
+            dictionaryForII[token[0]].append({docId : token[1]})
         else:
-            dictionaryForII[token] = [[docId, 1]]
+            dictionaryForII[token[0]] = [{docId : token[1]}]

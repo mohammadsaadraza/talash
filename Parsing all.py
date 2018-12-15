@@ -3,6 +3,7 @@ from FilterAndTokenize import filterDoc
 from ForwardIndexer import forwardIndexer
 from fire import pushInFirebase
 from InvertIndexer import invertedIndex
+import sys
 import os
 
 
@@ -34,20 +35,24 @@ def goThroughAllFiles():
                 if(pageTitle == None): pageTitle = name[:-5]
                 else: pageTitle = pageTitle.text
                 
-                #forwardIndexer(numOfFiles, pageTitle, headings, textList) #See ForwardIndexer file
+                #forwardIndexer(numOfFiles, pageTitle, headings, textList, dictionaryForFI) #See ForwardIndexer file
 
                 invertedIndex(numOfFiles, textList, dictionaryForII)
                 
                 print(numOfFiles)
+                print("Size of dictionary: ", sys.getsizeof(dictionaryForII))
                 
-                done+=1 
+                done+=1
+                
         
         if(done >= 1000): break
 
+#dictionaryForFI = dict()
 dictionaryForII = dict()
 
 
 goThroughAllFiles()
 
+#pushInFirebase(dictionaryForFI)
 
 pushInFirebase(dictionaryForII)

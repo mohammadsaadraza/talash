@@ -7,8 +7,12 @@ def pushInFirebase(dictDoc):
 
     cred = credentials.Certificate('./talash-70578-firebase-adminsdk-jz0oc-e545575ec0.json')
     default_app = firebase_admin.initialize_app(cred,{'databaseURL': 'https://talash-70578.firebaseio.com/'})
+    #firebase_admin.initialize_app(cred)
+    #db = firestore.client()
+    #db.collection("ForwardIndex").document("FI").set(dictDoc)
 
     root=db.reference()
-    ref=root.child('users')
+    ref=root.child('InvertedIndex')
     ref.set(dictDoc)
+
 
