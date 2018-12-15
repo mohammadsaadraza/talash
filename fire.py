@@ -15,4 +15,23 @@ def pushInFirebase(dictDoc):
     ref=root.child('InvertedIndex')
     ref.set(dictDoc)
 
+def pushInFirebaseHead(dictDoc):
 
+    cred = credentials.Certificate('./talash-70578-firebase-adminsdk-jz0oc-e545575ec0.json')
+    default_app = firebase_admin.initialize_app(cred,{'databaseURL': 'https://talash-70578.firebaseio.com/'})
+
+    root=db.reference()
+    ref=root.child('head')
+    ref.push().set(dictDoc)
+
+def pushInFirebaseUrl(dictDoc):
+
+    cred = credentials.Certificate('./talash-70578-firebase-adminsdk-jz0oc-e545575ec0.json')
+    default_app = firebase_admin.initialize_app(cred,{'databaseURL': 'https://talash-70578.firebaseio.com/'})
+
+    root=db.reference()
+    ref=root.child('url')
+    ref.push().set(dictDoc)
+
+    ref=root.child('InvertedIndex')
+    ref.set(dictDoc)

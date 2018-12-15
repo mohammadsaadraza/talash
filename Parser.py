@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import regex
+import re
 
 def parser(path):
 
@@ -17,3 +18,9 @@ def parser(path):
 
     return page.title, headings, page.get_text()
 
+def pageTitleHead (docId, title, head, dictionary):
+
+    dictionary[docId] = [[title, head[:-4]]]
+
+def urlIndex(docId, url, dictionary):
+    dictionary[docId] = [url]

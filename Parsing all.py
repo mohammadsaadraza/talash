@@ -1,14 +1,13 @@
-from Parser import parser
+from Parser import parser, pageTitleHead, urlIndex
 from FilterAndTokenize import filterDoc
 from ForwardIndexer import forwardIndexer
-from fire import pushInFirebase
+from fire import pushInFirebase, pushInFirebaseHead, pushInFirebaseUrl
 from InvertIndexer import invertedIndex
 import sys
 import os
 
 
     
-
 def goThroughAllFiles():
 
     path = "E:\\Wikipedia-Dataset" #Make sure the files are in this directory
@@ -38,6 +37,10 @@ def goThroughAllFiles():
                 #forwardIndexer(numOfFiles, pageTitle, headings, textList, dictionaryForFI) #See ForwardIndexer file
 
                 invertedIndex(numOfFiles, textList, dictionaryForII)
+
+                pageTitleHead(numOfFiles, pageTitle, headings, ditctionaryForHead)
+                
+                urlIndex(numOfFiles, root + "\\" + name, ditctionaryForUrl)
                 
                 print(numOfFiles)
                 print("Size of dictionary: ", sys.getsizeof(dictionaryForII))
@@ -49,10 +52,13 @@ def goThroughAllFiles():
 
 #dictionaryForFI = dict()
 dictionaryForII = dict()
+ditctionaryForHead = dict()
+ditctionaryForUrl = dict()
 
 
 goThroughAllFiles()
 
 #pushInFirebase(dictionaryForFI)
-
 pushInFirebase(dictionaryForII)
+pushInFirebaseHead(dictionaryForHead)
+pushInFirebaseUrl(dictionaryForUrl)
