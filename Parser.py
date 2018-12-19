@@ -16,7 +16,7 @@ def parser(path):
     for heading in page.find_all(regex.compile('^h[1-6]$')):    # "'^h[1-6]$'" is the levels of headings ie. h1 indicates heading, h2 subheading, etc...
         headings.append(heading.text.strip())
 
-    return page.title, headings, page.get_text()
+    return page.title, headings[2:-4], page.get_text()
 
 def pageTitleHead (docId, title, head, dictionary):
 

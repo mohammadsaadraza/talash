@@ -6,7 +6,20 @@ from InvertIndexer import invertedIndex
 import sys
 import os
 
+def porterStemmer(headingsList, title):
 
+    headings = []
+    titles = []
+
+    PS = PorterStemmer()
+
+    for term in headingsList:
+        headings.append(PS.stem(term))
+
+    for term in title.split():
+        titles.append(PS.stem(term))
+
+    return headings, titles
     
 def goThroughAllFiles():
 
@@ -33,14 +46,25 @@ def goThroughAllFiles():
                 
                 if(pageTitle == None): pageTitle = name[:-5]
                 else: pageTitle = pageTitle.text
-                
+
+                #-----FORWARD & INVERTED INDEX functions, comment one and uncomment the other to build the index-----------
                 #forwardIndexer(numOfFiles, pageTitle, headings, textList, dictionaryForFI) #See ForwardIndexer file
 
-                invertedIndex(numOfFiles, textList, dictionaryForII)
+                headings, pageTitle = porterStemmer(headings, pageTitle)                
 
-                pageTitleHead(numOfFiles, pageTitle, headings, ditctionaryForHead)
+                invertedIndex(numOfFiles, headings, pageTitle, textList, dictionaryForII)
                 
+                #-----Heading Storage in Database, used to ease Searcher Component------
+                pageTitleHead(numOfFiles, pageTitle, headings, ditctionaryForHead)
+
+                #-----Linking urls to docIDs------------
                 urlIndex(numOfFiles, root + "\\" + name, ditctionaryForUrl)
+
+
+                pageTitleHead(numOfFiles, pageTitle, headings, dictionaryForHead)
+                
+                urlIndex(numOfFiles, root + "\\" + name, dictionaryForUrl)
+
                 
                 print(numOfFiles)
                 print("Size of dictionary: ", sys.getsizeof(dictionaryForII))
@@ -48,17 +72,20 @@ def goThroughAllFiles():
                 done+=1
                 
         
-        if(done >= 1000): break
+        if(done >= 10000): break
 
+#------Dicts For Corresponding purposes, comment one and uncomment the other as required--------
 #dictionaryForFI = dict()
 dictionaryForII = dict()
-ditctionaryForHead = dict()
-ditctionaryForUrl = dict()
+dictionaryForHead = dict()
+dictionaryForUrl = dict()
 
-
+#*********Main Parsing Function Call*************
 goThroughAllFiles()
+#**************************************
 
+#-------Functions to store DICTS in Database-----------
 #pushInFirebase(dictionaryForFI)
-#pushInFirebase(dictionaryForII)
-#pushInFirebaseHead(dictionaryForHead)
-#pushInFirebaseUrl(dictionaryForUrl)
+pushInFirebase(dictionaryForII)
+pushInFirebaseHead(dictionaryForHead)
+pushInFirebaseUrl(dictionaryForUrl)
