@@ -1,7 +1,10 @@
 from Parser import parser, pageTitleHead, urlIndex
 from FilterAndTokenize import filterDoc
 from ForwardIndexer import forwardIndexer
+from nltk import PorterStemmer
 from fire import pushInFirebase, pushInFirebaseHead, pushInFirebaseUrl
+import json
+import sqlite3
 from InvertIndexer import invertedIndex
 import sys
 import os
@@ -23,7 +26,7 @@ def porterStemmer(headingsList, title):
     
 def goThroughAllFiles():
 
-    path = "F:\\Wikipedia-Dataset" #Make sure the files are in this directory
+    path = "E:\\Wikipedia-Dataset" #Make sure the files are in this directory
 
     numOfFiles = 0 #Total 109832 files have to be parsed!! Keep Calm xD
 
@@ -55,15 +58,15 @@ def goThroughAllFiles():
                 invertedIndex(numOfFiles, headings, pageTitle, textList, dictionaryForII)
                 
                 #-----Heading Storage in Database, used to ease Searcher Component------
-                pageTitleHead(numOfFiles, pageTitle, headings, ditctionaryForHead)
+                #pageTitleHead(numOfFiles, pageTitle, headings, ditctionaryForHead)
 
                 #-----Linking urls to docIDs------------
-                urlIndex(numOfFiles, root + "\\" + name, ditctionaryForUrl)
+                #urlIndex(numOfFiles, root + "\\" + name, ditctionaryForUrl)
 
 
-                pageTitleHead(numOfFiles, pageTitle, headings, dictionaryForHead)
+                #pageTitleHead(numOfFiles, pageTitle, headings, dictionaryForHead)
                 
-                urlIndex(numOfFiles, root + "\\" + name, dictionaryForUrl)
+                #urlIndex(numOfFiles, root + "\\" + name, dictionaryForUrl)
 
                 
                 print(numOfFiles)
@@ -77,8 +80,8 @@ def goThroughAllFiles():
 #------Dicts For Corresponding purposes, comment one and uncomment the other as required--------
 #dictionaryForFI = dict()
 dictionaryForII = dict()
-dictionaryForHead = dict()
-dictionaryForUrl = dict()
+#dictionaryForHead = dict()
+#dictionaryForUrl = dict()
 
 #*********Main Parsing Function Call*************
 goThroughAllFiles()
@@ -86,6 +89,24 @@ goThroughAllFiles()
 
 #-------Functions to store DICTS in Database-----------
 #pushInFirebase(dictionaryForFI)
-pushInFirebase(dictionaryForII)
-pushInFirebaseHead(dictionaryForHead)
-pushInFirebaseUrl(dictionaryForUrl)
+#pushInFirebase(dictionaryForII)
+db = sqlite3.connect("C:\\Users\\HAT\\Desktop\\Parsing\\InvertedIndex.db")
+cur = db.cursor()
+#cur.execute('''Drop Table InvertedIndex''')
+cur.execute('''Create Table InvertedIndex(word string, docId int, isTitle boolean, isHeading boolean, frequency int, Positions string)''')
+
+k = 1
+
+for key in dictionaryForII:
+    print(k)
+    k+=1
+
+    for aList in dictionaryForII[key]:
+
+        cur.execute('''INSERT INTO InvertedIndex(word, docId, isTitle, isHeading, frequency, Positions) VALUES (?,?,?,?,?,?)''', (key, aList[0], aList[1], aList[2], aList[3], ",".join(str(e) for e in aList[4])))
+
+db.commit()
+
+db.close()
+#pushInFirebaseHead(dictionaryForHead)
+#pushInFirebaseUrl(dictionaryForUrl)
