@@ -30,7 +30,7 @@ def goThroughAllFiles():
                 done+=1
                 
         
-        if(done >= 10000): break
+        if(done >= 80000): break
 
     print("Time taken to store urls: ", (time.time()-start))
     return dictionaryForUrl

@@ -1,54 +1,31 @@
-import sqlite3
-from tempUrl import goThroughAllFiles
-from nltk import PorterStemmer
 import operator
-import time
 
-def fetchResult(aWord):
+
+#-------------------This function retrieves the index of a word from sqlite database and returns it-------------------#
+
+def fetchResult(aWord, cur):
     
-    cur.execute("SELECT * FROM InvertedIndex WHERE word=?",(aWord,))
+    cur.execute("SELECT docId, isTitle, isHeading, frequency FROM InvertedIndex WHERE word=?",(aWord,))
     return cur.fetchall()
 
-def pageRankForSingleWordQuery(allHitLists):
+#-------------------This function calculates pageRank for a single word query-------------------#
 
-    tempDict = dict()
+def pageRankForSingleWordQuery(word, cur, dictionaryForUrl):
 
-    print("Fetched:", allHitLists)
+    allHitLists = fetchResult(word[0], cur)
+
+    ranks = dict() #Dictionary that will contain doc ids and their respective ranks
 
     for hitList in allHitLists:
 
-        tempDict[hitList[1]] = 0
-        if hitList[2] : tempDict[hitList[1]] += 5
-        if hitList[3] : tempDict[hitList[1]] += 2.5
-        tempDict[hitList[1]] += hitList[4]*0.5
+        ranks[hitList[0]] = 0
+        if hitList[1] : ranks[hitList[0]] += 5
+        if hitList[2] : ranks[hitList[0]] += 2.5
+        ranks[hitList[0]] += hitList[3]*0.5
 
-    print("Calculated Page Rank:", tempDict)
-
-    sortedByValue =  sorted(tempDict, key=tempDict.get, reverse=True)
-
-    print("\n\n\nCorrosponding urls: \n\n\n")
-
-    for key in sortedByValue:
-        print(key, "\t", dictionaryForUrl[key])
+    return ranks
 
 
-dictionaryForUrl = goThroughAllFiles()
-
-PS = PorterStemmer()
-
-db = sqlite3.connect("InvertedIndex.db")
-cur = db.cursor()
-
-while True:
-    
-    token = input("Enter a word: ")
-    start = time.time()
-
-    queryWord = PS.stem(token)
-
-    pageRankForSingleWordQuery(fetchResult(queryWord))
-
-    print("Time taken to answer the query:", time.time()-start)
 
 
 
