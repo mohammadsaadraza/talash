@@ -1,6 +1,8 @@
 import time
 import os
 
+#This function is used by other files! xD
+
 def goThroughAllFiles():
 
     start = time.time()
