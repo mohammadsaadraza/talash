@@ -18,27 +18,64 @@ def makeDictionary(aList):
 
     return tempDic
 
-def avgDistance(positionsList1, positionsList2):
+def avgDistance(dictionaryByDocId, dictionaryForWordsInSameDoc, docId, numOfWords):
 
-    loop = 0
+    totalDifference = 0
+    sameLengths = 0
+    extras = 0
 
-    positionsList1 = list(str(positionsList1).split(","))
-    positionsList2 = list(str(positionsList2).split(","))
+    #print("Number of Words in query: ", numOfWords)
 
-    if len(positionsList1) >= len(positionsList2): loop = len(positionsList2)
-    else : loop = len(positionsList1)
+    for a in range(numOfWords):
 
-    total = 0
+        positionsList1 = list(str(dictionaryByDocId[dictionaryForWordsInSameDoc[docId][a]][docId][3]).split(","))
 
-    #print("POSITIONS LIST 1:",positionsList1,"POSITIONS LIST 2:",positionsList2)
-    
-    for i in range(loop):
-        total += abs(int(positionsList1[i]) - int(positionsList2[i]))
+        totalForAWord = 0
 
-    if loop == len(positionsList1) : return total/loop, len(positionsList2)-loop
-    if loop == len(positionsList2) : return total/loop, len(positionsList1)-loop
-    
-    
+        for b in range(a+1, numOfWords):
+
+            positionsList2 = list(str(dictionaryByDocId[dictionaryForWordsInSameDoc[docId][b]][docId][3]).split(","))
+
+            tempLength1 = len(positionsList1)
+            tempLength2 = len(positionsList2)
+
+            #print("Positions LIST 1 length: ", tempLength1)
+            #print("Positions LIST 2 length: ", tempLength2)
+
+            loop = 0
+
+            if tempLength1 >= tempLength2: loop = tempLength2
+            else : loop = tempLength1
+
+            #print("Loop =", loop)
+            #print("SameLengths =", sameLengths)
+
+            sameLengths = sameLengths+loop
+
+            #print("After adding SameLengths =", sameLengths)
+            #print("After adding loop =", loop)
+
+            
+            totalForTwoWords = 0
+
+            #print("POSITIONS LIST 1:",positionsList1,"POSITIONS LIST 2:",positionsList2)
+            
+            for i in range(loop):
+                totalForTwoWords += abs(int(positionsList1[i]) - int(positionsList2[i]))
+
+            if loop == tempLength1 : extras += tempLength2-loop
+            elif loop == tempLength2 : extras += tempLength1-loop
+
+            if loop != 0 : totalForAWord += totalForTwoWords/loop
+
+        totalDifference += totalForAWord
+
+    return totalDifference/sameLengths, extras
+
+    #if loop == len(positionsList1) : return total/loop, len(positionsList2)-loop
+    #if loop == len(positionsList2) : return total/loop, len(positionsList1)-loop
+                
+                 
 def checkWordsInSameDoc(dictionaryForWordsInSameDoc, word, fetchedIndexForAword):
 
     for i in range(len(fetchedIndexForAword)):
@@ -61,12 +98,22 @@ def removeSingleOccurences(dictionaryForWordsInSameDoc):
 def displayURLS(pageRankDictionary):
 
     sortedByValue =  sorted(pageRankDictionary, key=pageRankDictionary.get, reverse=True)
+    items = 0
 
     print("\n\n\nCorrosponding urls: \n\n\n")
 
     for key in sortedByValue:
         print(key, "\t", dictionaryForUrl[key], "\t", pageRankDictionary[key])
+        items += 1
+        if items == 20: break
 
+
+def isHeadingOrTitle(dictionaryByDocId, dictionaryForWordsInSameDoc, docId,  numOfWords):
+
+    for i in range(numOfWords):
+        if dictionaryByDocId[dictionaryForWordsInSameDoc[docId][i]][docId][3] == "": return True
+    
+    return False
 
 def pageRankForMultipleWordQuery(listOfWords):
 
@@ -90,9 +137,9 @@ def pageRankForMultipleWordQuery(listOfWords):
     for docId in dictionaryForWordsInSameDoc:
         pageRankDictionary[docId] = 0
         for word in dictionaryForWordsInSameDoc[docId]:
-            if dictionaryByDocId[word][docId][0]: pageRankDictionary[docId] += 3000
-            if dictionaryByDocId[word][docId][1]: pageRankDictionary[docId] += 2000
-            pageRankDictionary[docId] += 20*dictionaryByDocId[word][docId][2]
+            if dictionaryByDocId[word][docId][0]: pageRankDictionary[docId] += 10000
+            if dictionaryByDocId[word][docId][1]: pageRankDictionary[docId] += 5000
+            pageRankDictionary[docId] += 50*dictionaryByDocId[word][docId][2]
             
     removeSingleOccurences(dictionaryForWordsInSameDoc)
 
@@ -103,16 +150,19 @@ def pageRankForMultipleWordQuery(listOfWords):
             
     for docId in dictionaryForWordsInSameDoc:
 
+        lengthOfList = len(dictionaryForWordsInSameDoc[docId])
+
         #print(dictionaryByDocId[dictionaryForWordsInSameDoc[docId][0]][docId])
         #print(dictionaryForWordsInSameDoc[docId])
         #print(dictionaryByDocId[dictionaryForWordsInSameDoc[docId][1]])
 
-        if(dictionaryByDocId[dictionaryForWordsInSameDoc[docId][0]][docId][3] == "" or dictionaryByDocId[dictionaryForWordsInSameDoc[docId][1]][docId][3] == "") : continue
+        if isHeadingOrTitle(dictionaryByDocId, dictionaryForWordsInSameDoc, docId, lengthOfList) : continue
 
-        difference, extra = avgDistance(dictionaryByDocId[dictionaryForWordsInSameDoc[docId][0]][docId][3], dictionaryByDocId[dictionaryForWordsInSameDoc[docId][1]][docId][3])
+        difference, extra = avgDistance(dictionaryByDocId, dictionaryForWordsInSameDoc, docId, lengthOfList)
+        #difference, extra = avgDistance(dictionaryByDocId[dictionaryForWordsInSameDoc[docId][0]][docId][3], dictionaryByDocId[dictionaryForWordsInSameDoc[docId][1]][docId][3])
         #print("Avg difference between words =",difference)
         #print("10000/difference =",10000/difference) 
-        pageRankDictionary[docId] += (10000/difference) + (extra*0.5)
+        pageRankDictionary[docId] += (5000/difference) + (extra*0.5)
 
     #print("Final Page Rank: ", pageRankDictionary)
     displayURLS(pageRankDictionary)
@@ -128,13 +178,18 @@ cur = db.cursor()
 
 while True:
 
-    query = input("Enter a 2 word query seperated by space: ")
+    query = input("Enter a multi word query seperated by space: ")
 
     start = time.time()
     
     query = query.split(" ")
-    query = [PS.stem(query[0]), PS.stem(query[1])]
-    pageRankForMultipleWordQuery(query)
+
+    stemmedQuery = list()
+
+    for token in query:
+        stemmedQuery.append(PS.stem(token))
+        
+    pageRankForMultipleWordQuery(stemmedQuery)
 
     print("\n\nTime taken to answer the query =", time.time()-start)
     
