@@ -70,12 +70,12 @@ def goThroughAllFiles():
 
                 
                 print(numOfFiles)
-                print("Size of dictionary: ", sys.getsizeof(dictionaryForII))
+                #print("Size of dictionary: ", sys.getsizeof(dictionaryForII))
                 
                 done+=1
                 
         
-        if(done >= 10000): break
+        if(done >= 80000): break
 
 #------Dicts For Corresponding purposes, comment one and uncomment the other as required--------
 #dictionaryForFI = dict()
