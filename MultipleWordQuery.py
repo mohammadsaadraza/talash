@@ -1,13 +1,14 @@
-from nltk import PorterStemmer
-from tempUrl import goThroughAllFiles
-import sqlite3
 import operator
-import time
 
-def fetchResult(aWord):
+#-------------------This function retrieves the index of a word from sqlite database and returns it-------------------#
+
+def fetchResult(aWord, cur):
     
     cur.execute("SELECT docId, isTitle, isHeading, frequency, Positions FROM InvertedIndex WHERE word=?",(aWord,))
     return cur.fetchall()
+
+#-------------------This function takes the tuples returned from the database and then makes a dictionary in which first element of-------------------#
+#-------------------------------the tuple is key and all the others are stored in list that is referred by the key------------------------------------#
 
 def makeDictionary(aList):
 
@@ -18,13 +19,16 @@ def makeDictionary(aList):
 
     return tempDic
 
+#-------------------This function calculates the distribution of words in a document. Document with less distribution will be prefferred-------------------#
+
+#Distance of every word from every other word is calculated and then the average distance is calculated. Incase of imbalance between the frequencies
+#of two words, pageRank will be increased by constant times the amount by which imbalance occurred
+
 def avgDistance(dictionaryByDocId, dictionaryForWordsInSameDoc, docId, numOfWords):
 
     totalDifference = 0
     sameLengths = 0
     extras = 0
-
-    #print("Number of Words in query: ", numOfWords)
 
     for a in range(numOfWords):
 
@@ -39,27 +43,15 @@ def avgDistance(dictionaryByDocId, dictionaryForWordsInSameDoc, docId, numOfWord
             tempLength1 = len(positionsList1)
             tempLength2 = len(positionsList2)
 
-            #print("Positions LIST 1 length: ", tempLength1)
-            #print("Positions LIST 2 length: ", tempLength2)
-
             loop = 0
 
             if tempLength1 >= tempLength2: loop = tempLength2
             else : loop = tempLength1
 
-            #print("Loop =", loop)
-            #print("SameLengths =", sameLengths)
-
             sameLengths = sameLengths+loop
-
-            #print("After adding SameLengths =", sameLengths)
-            #print("After adding loop =", loop)
-
             
             totalForTwoWords = 0
 
-            #print("POSITIONS LIST 1:",positionsList1,"POSITIONS LIST 2:",positionsList2)
-            
             for i in range(loop):
                 totalForTwoWords += abs(int(positionsList1[i]) - int(positionsList2[i]))
 
@@ -72,10 +64,11 @@ def avgDistance(dictionaryByDocId, dictionaryForWordsInSameDoc, docId, numOfWord
 
     return totalDifference/sameLengths, extras
 
-    #if loop == len(positionsList1) : return total/loop, len(positionsList2)-loop
-    #if loop == len(positionsList2) : return total/loop, len(positionsList1)-loop
-                
-                 
+
+#-------------------This function makes a dictionary that will contain doc ids which will refer to a list containing the words that-------------------#
+#-------------------------------------------------------occurred in that particular document----------------------------------------------------------#
+
+          
 def checkWordsInSameDoc(dictionaryForWordsInSameDoc, word, fetchedIndexForAword):
 
     for i in range(len(fetchedIndexForAword)):
@@ -83,6 +76,10 @@ def checkWordsInSameDoc(dictionaryForWordsInSameDoc, word, fetchedIndexForAword)
             dictionaryForWordsInSameDoc[fetchedIndexForAword[i][0]] = [word]
         else:
             dictionaryForWordsInSameDoc[fetchedIndexForAword[i][0]].append(word)
+
+
+#-------------------This function removes those documents from the dictionary that contain only word from the query. This is because-------------------#
+#-------------------------------pageRank for single occurrences are calculated in the same way as for single word queries------------------------------#
 
 
 def removeSingleOccurences(dictionaryForWordsInSameDoc):
@@ -95,17 +92,8 @@ def removeSingleOccurences(dictionaryForWordsInSameDoc):
     for docId in keysToBeRemoved:
         del dictionaryForWordsInSameDoc[docId]
 
-def displayURLS(pageRankDictionary):
 
-    sortedByValue =  sorted(pageRankDictionary, key=pageRankDictionary.get, reverse=True)
-    items = 0
-
-    print("\n\n\nCorrosponding urls: \n\n\n")
-
-    for key in sortedByValue:
-        print(key, "\t", dictionaryForUrl[key], "\t", pageRankDictionary[key])
-        items += 1
-        if items == 20: break
+#-------------------This function returns true if any of the word appearing in a document is a heading or a tile and false otherwise. -------------------#
 
 
 def isHeadingOrTitle(dictionaryByDocId, dictionaryForWordsInSameDoc, docId,  numOfWords):
@@ -115,9 +103,9 @@ def isHeadingOrTitle(dictionaryByDocId, dictionaryForWordsInSameDoc, docId,  num
     
     return False
 
-def pageRankForMultipleWordQuery(listOfWords):
+#-------------------This function calculates pageRank for multiple Word Queries-------------------#
 
-    print("SEARCHING: ", listOfWords)
+def pageRankForMultipleWordQuery(listOfWords, cur, dictionaryForUrl):
 
     fetchedIndex = dict()
     dictionaryByDocId = dict()
@@ -125,8 +113,7 @@ def pageRankForMultipleWordQuery(listOfWords):
     pageRankDictionary = dict()
 
     for word in listOfWords:
-        fetchedIndex[word] = fetchResult(word)
-        #print("TESTING FETCHED INDEX    ", fetchedIndex[word])
+        fetchedIndex[word] = fetchResult(word, cur)
         checkWordsInSameDoc(dictionaryForWordsInSameDoc, word, fetchedIndex[word])
         dictionaryByDocId[word] = makeDictionary(fetchedIndex[word])
 
@@ -142,55 +129,16 @@ def pageRankForMultipleWordQuery(listOfWords):
             pageRankDictionary[docId] += 50*dictionaryByDocId[word][docId][2]
             
     removeSingleOccurences(dictionaryForWordsInSameDoc)
-
-    #print("Fetched Index:", fetchedIndex)
-    #print("Dictionary By Doc id:", dictionaryByDocId)
-    #print("Dictionary For Words in same Doc:", dictionaryForWordsInSameDoc)
-    #print("Page Rank:", pageRankDictionary)
             
     for docId in dictionaryForWordsInSameDoc:
 
         lengthOfList = len(dictionaryForWordsInSameDoc[docId])
 
-        #print(dictionaryByDocId[dictionaryForWordsInSameDoc[docId][0]][docId])
-        #print(dictionaryForWordsInSameDoc[docId])
-        #print(dictionaryByDocId[dictionaryForWordsInSameDoc[docId][1]])
-
         if isHeadingOrTitle(dictionaryByDocId, dictionaryForWordsInSameDoc, docId, lengthOfList) : continue
 
         difference, extra = avgDistance(dictionaryByDocId, dictionaryForWordsInSameDoc, docId, lengthOfList)
-        #difference, extra = avgDistance(dictionaryByDocId[dictionaryForWordsInSameDoc[docId][0]][docId][3], dictionaryByDocId[dictionaryForWordsInSameDoc[docId][1]][docId][3])
-        #print("Avg difference between words =",difference)
-        #print("10000/difference =",10000/difference) 
+ 
         pageRankDictionary[docId] += (5000/difference) + (extra*0.5)
 
-    #print("Final Page Rank: ", pageRankDictionary)
-    displayURLS(pageRankDictionary)
-
-
-
-dictionaryForUrl = goThroughAllFiles()
-
-PS = PorterStemmer()
-
-db = sqlite3.connect("InvertedIndex.db")
-cur = db.cursor()
-
-while True:
-
-    query = input("Enter a multi word query seperated by space: ")
-
-    start = time.time()
     
-    query = query.split(" ")
-
-    stemmedQuery = list()
-
-    for token in query:
-        stemmedQuery.append(PS.stem(token))
-        
-    pageRankForMultipleWordQuery(stemmedQuery)
-
-    print("\n\nTime taken to answer the query =", time.time()-start)
-    
-
+    return pageRankDictionary
