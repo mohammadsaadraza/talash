@@ -2,8 +2,6 @@ from Parser import parser, pageTitleHead, urlIndex
 from FilterAndTokenize import filterDoc
 from ForwardIndexer import forwardIndexer
 from nltk import PorterStemmer
-from fire import pushInFirebase, pushInFirebaseHead, pushInFirebaseUrl
-import json
 import sqlite3
 from InvertIndexer import invertedIndex
 import sys
@@ -57,20 +55,7 @@ def goThroughAllFiles():
 
                 invertedIndex(numOfFiles, headings, pageTitle, textList, dictionaryForII)
                 
-                #-----Heading Storage in Database, used to ease Searcher Component------
-                #pageTitleHead(numOfFiles, pageTitle, headings, ditctionaryForHead)
-
-                #-----Linking urls to docIDs------------
-                #urlIndex(numOfFiles, root + "\\" + name, ditctionaryForUrl)
-
-
-                #pageTitleHead(numOfFiles, pageTitle, headings, dictionaryForHead)
-                
-                #urlIndex(numOfFiles, root + "\\" + name, dictionaryForUrl)
-
-                
                 print(numOfFiles)
-                #print("Size of dictionary: ", sys.getsizeof(dictionaryForII))
                 
                 done+=1
                 
@@ -80,16 +65,11 @@ def goThroughAllFiles():
 #------Dicts For Corresponding purposes, comment one and uncomment the other as required--------
 #dictionaryForFI = dict()
 dictionaryForII = dict()
-#dictionaryForHead = dict()
-#dictionaryForUrl = dict()
 
 #*********Main Parsing Function Call*************
 goThroughAllFiles()
 #**************************************
 
-#-------Functions to store DICTS in Database-----------
-#pushInFirebase(dictionaryForFI)
-#pushInFirebase(dictionaryForII)
 db = sqlite3.connect("C:\\Users\\HAT\\Desktop\\Parsing\\InvertedIndex.db")
 cur = db.cursor()
 #cur.execute('''Drop Table InvertedIndex''')
@@ -108,5 +88,4 @@ for key in dictionaryForII:
 db.commit()
 
 db.close()
-#pushInFirebaseHead(dictionaryForHead)
-#pushInFirebaseUrl(dictionaryForUrl)
+

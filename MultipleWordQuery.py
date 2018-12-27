@@ -44,21 +44,28 @@ def avgDistance(dictionaryByDocId, dictionaryForWordsInSameDoc, docId, numOfWord
             tempLength2 = len(positionsList2)
 
             loop = 0
-
-            if tempLength1 >= tempLength2: loop = tempLength2
-            else : loop = tempLength1
-
-            sameLengths = sameLengths+loop
             
             totalForTwoWords = 0
 
-            for i in range(loop):
-                totalForTwoWords += abs(int(positionsList1[i]) - int(positionsList2[i]))
+            index1 = 0
+            index2 = 0
 
-            if loop == tempLength1 : extras += tempLength2-loop
-            elif loop == tempLength2 : extras += tempLength1-loop
+            while index1 < tempLength1 and index2 < tempLength2:
 
-            if loop != 0 : totalForAWord += totalForTwoWords/loop
+                a = int(positionsList1[index1])
+                b = int(positionsList2[index2])
+                
+                if not (index2 != tempLength2 - 1 and abs(a - b) >= abs(a - int(positionsList2[index2 + 1]))):
+                    totalForTwoWords += abs(a - b)
+                    loop += 1
+                    sameLengths += 1
+                    index1 += 1
+
+                index2 += 1
+
+            extras += (tempLength1-index1) + (tempLength2-index2)
+
+            totalForAWord += totalForTwoWords/loop
 
         totalDifference += totalForAWord
 
@@ -124,9 +131,9 @@ def pageRankForMultipleWordQuery(listOfWords, cur, dictionaryForUrl):
     for docId in dictionaryForWordsInSameDoc:
         pageRankDictionary[docId] = 0
         for word in dictionaryForWordsInSameDoc[docId]:
-            if dictionaryByDocId[word][docId][0]: pageRankDictionary[docId] += 10000
-            if dictionaryByDocId[word][docId][1]: pageRankDictionary[docId] += 5000
-            pageRankDictionary[docId] += 50*dictionaryByDocId[word][docId][2]
+            if dictionaryByDocId[word][docId][0]: pageRankDictionary[docId] += 10
+            if dictionaryByDocId[word][docId][1]: pageRankDictionary[docId] += 2.5
+            pageRankDictionary[docId] += 0.5*dictionaryByDocId[word][docId][2]
             
     removeSingleOccurences(dictionaryForWordsInSameDoc)
             
@@ -138,7 +145,7 @@ def pageRankForMultipleWordQuery(listOfWords, cur, dictionaryForUrl):
 
         difference, extra = avgDistance(dictionaryByDocId, dictionaryForWordsInSameDoc, docId, lengthOfList)
  
-        pageRankDictionary[docId] += (5000/difference) + (extra*0.5)
+        pageRankDictionary[docId] += (15/difference) + (extra*0.5)
 
     
     return pageRankDictionary
