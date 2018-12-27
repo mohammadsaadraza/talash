@@ -9,7 +9,7 @@ def goThroughAllFiles():
 
     dictionaryForUrl = dict()
 
-    path = "E:\\Wikipedia-Dataset" #Make sure the files are in this directory
+    path = "F:\\Wikipedia-Dataset" #Make sure the files are in this directory
 
     numOfFiles = 0 #Total 109832 files have to be parsed!! Keep Calm xD
 

@@ -4,7 +4,10 @@ from storeURLs import goThroughAllFiles
 from nltk.corpus import stopwords
 from nltk import PorterStemmer
 import tkinter
+<<<<<<< HEAD
 import regex 
+=======
+>>>>>>> ad5891bc798d24adf73e0747a15c69d66469cc44
 import webbrowser
 import sqlite3
 import operator
@@ -42,6 +45,7 @@ def returnUrls(rankedDictionary):
 #-------------------This function is for the hyperlink to open the browser on click--------------------------------------#
 def callback(event):
     webbrowser.open_new(event.widget.cget("text"))
+<<<<<<< HEAD
 
     
     
@@ -86,6 +90,42 @@ def createWindow():
 
         except:
             print("No Result Found!")
+=======
+
+    
+    
+#-------------------This is the main GUI window for the search engine----------------------------------------------------#
+def createWindow():
+
+
+    #---------------Button to retrieve data from field and search the words----------------------------------------------#
+    
+    def callButton():
+        a = e1.get().split(" ")
+        e1.delete(0, 'end')
+        print(a)
+        searchQuery(a)
+
+    #---------------Function for searching the words in our database and retreiving a ranked list of docs according to our PageRank----------------------------#
+
+    def searchQuery(query):
+        start = time.time()
+
+        query = [word for word in query if word not in stopWords]
+
+        for i in range(len(query)):
+            query[i] = PS.stem(query[i])
+
+        print("Your Query:", query)
+
+        rankedDictionary = dict()
+
+        if isSingleWordQuery(query) : rankedDictionary = pageRankForSingleWordQuery(query, cur, dictionaryForUrl)
+        elif isMultipleWordsQuery(query) : rankedDictionary = pageRankForMultipleWordQuery(query, cur, dictionaryForUrl)
+        else : print("You didn't enter anything!")
+        
+        returnUrls(rankedDictionary)
+>>>>>>> ad5891bc798d24adf73e0747a15c69d66469cc44
 
         print("Time taken to answer the query:", time.time()-start)
         
@@ -100,6 +140,7 @@ def createWindow():
     
     window = tkinter.Tk() #Creating window
     window.title('TALAASH')
+<<<<<<< HEAD
     
     w = tkinter.Canvas(window, height=406, width=650) #Using canvas to draw images
     w.pack()
@@ -107,6 +148,32 @@ def createWindow():
     background = tkinter.PhotoImage(file = "back.png")
     w.create_image(335, 220, image = background) #Blitting images
 
+
+    e1 = tkinter.Entry(window, width = 32) #Creating entry field
+    e1_window = w.create_window(235, 305, anchor='nw', window=e1)
+    
+    photo1 = tkinter.PhotoImage(file = 'button.png')
+    b1 = tkinter.Button(window, height = 29, width = 129, image = photo1, command = callButton) #Creating search button
+    b1_window = w.create_window(265, 350, anchor='nw', window = b1)
+
+=======
+    
+    w = tkinter.Canvas(window, height=406, width=650) #Using canvas to draw images
+    w.pack()
+
+    background = tkinter.PhotoImage(file = "back.png")
+    w.create_image(335, 220, image = background) #Blitting images
+>>>>>>> ad5891bc798d24adf73e0747a15c69d66469cc44
+
+    window.mainloop()
+    
+
+#-------------------Main file where we create the index of all URLs and call the GUI create function-------------------#
+
+
+dictionaryForUrl = goThroughAllFiles() #See tempUrl file
+re = regex.compile("[^a-zA-z0-9\n]")
+createWindow()
 
     e1 = tkinter.Entry(window, width = 32) #Creating entry field
     e1_window = w.create_window(235, 305, anchor='nw', window=e1)
@@ -123,7 +190,6 @@ def createWindow():
 
 
 dictionaryForUrl = goThroughAllFiles() #See tempUrl file
-re = regex.compile("[^a-zA-z0-9\n]")
 createWindow()
 
 
